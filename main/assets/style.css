@@ -1,0 +1,72 @@
+html {
+    scroll-behavior: smooth;
+    /* always show scrollbar to avoid layout "shift" when visible elements change*/
+    overflow-y: scroll;
+}
+
+a:target {
+    background: white;
+    color: black;
+    border-color: black;
+}
+
+section.page {
+    display: none;
+}
+
+section.page.active {
+    display: block;
+}
+
+.online-count {
+    height: 25px;
+    width: 25px;
+    background-color: teal;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 20px;
+}
+
+
+nav ul {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+th[colspan] {
+    border: solid cyan;
+}
+
+th {
+    text-align: center !important;
+}
+
+article {
+    border: solid orange;
+}
+
+/*
+    Easy Copy paste from
+    https://nerdy.dev/open-and-close-transitions-for-the-details-element
+*/
+details {
+    @media (prefers-reduced-motion: no-preference) {
+        interpolate-size: allow-keywords;
+    }
+
+    &::details-content {
+        opacity: 0;
+        block-size: 0;
+        overflow-y: clip;
+        transition: content-visibility 0.1s allow-discrete, opacity 0.1s, block-size 0.1s;
+    }
+
+    &[open]::details-content {
+        opacity: 1;
+        block-size: auto;
+    }
+}

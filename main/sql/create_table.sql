@@ -1,0 +1,19 @@
+create table if not exists tax_simulation(
+	tax_simulation_id text not null primary key,
+    version int not null default 0,
+    gross_salary int not null default 0,
+    ahv_beitrag int not null default 0,
+	alv_beitrag int not null default 0,
+    ktg_beitrag int not null default 0,
+    bvg_beitrag int not null default 0,
+    taxable_salary int not null default 0,
+    year int not null default 2025,
+	commune_id int not null default 261,
+	investment int not null default 0,
+    deduction_other int not null default 0,
+    deduction_transport int not null default 0,
+	deduction_profession int not null default 0,
+    deduction_third_pillar int not null default 0,
+    deduction_health_insurance int not null default 0,
+    deduction_meal int not null default 0
+) without rowid;

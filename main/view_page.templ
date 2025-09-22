@@ -1,0 +1,770 @@
+package main
+
+import "strings"
+import "fmt"
+import "net/http"
+import "github.com/Jiang-Gianni/zhteuern/taxes"
+
+var pageToKey = map[string]string{
+	income:     "a",
+	investment: "r",
+	deduction:  "s",
+	result:     "t",
+}
+
+templ ViewNavigation() {
+	<nav id="navigation">
+		<ul>
+			for _, p := range pageList {
+				{{
+					pageName := strings.ToUpper(p)
+					keyboard := pageToKey[p]
+				}}
+				<li>
+					<a
+						id={ p }
+						class="outline"
+						role="button"
+						href={ fmt.Sprintf("#%s", p) }
+						key-down={ keyboard }
+					>{ pageName } <kbd>{ keyboard }</kbd></a>
+				</li>
+			}
+			<li>
+				<a
+					role="button"
+					class="outline"
+					click-scroll-y="-300"
+					key-down="f"
+				>Up <kbd>f</kbd></a>
+			</li>
+			<li>
+				<a
+					role="button"
+					class="outline"
+					click-scroll-y="300"
+					key-down="p"
+				>Down <kbd>p</kbd></a>
+			</li>
+			<span class="online-count"></span>
+			<div id={ onlineCountID }></div>
+			<li>
+				<button
+					class="outline"
+					key-down="q"
+					popovertarget={ qrCode }
+				>
+					QR Code <kbd>q</kbd>
+				</button>
+			</li>
+		</ul>
+	</nav>
+}
+
+templ ImgQRCode(base64String string) {
+	<img
+		src={ fmt.Sprintf("data:image/png;base64,%s", base64String) }
+		alt="QR Code"
+		id={ qrCodeImage }
+		style="display: block; margin:0 auto;"
+	/>
+}
+
+templ DialogQRCode() {
+	<div id={ qrCode } popover>
+		<dialog open>
+			<article>
+				<span
+					id={ qrCodeImage }
+					intersect-fetch="eval(&quot;window.location.pathname + '/qr-code'&quot;)"
+					style="display: block; margin:0 auto;"
+				></span>
+				<footer>
+					<button
+						class="outline"
+						popovertarget={ qrCode }
+						key-down="q"
+					>Close <kbd>q</kbd></button>
+				</footer>
+			</article>
+		</dialog>
+	</div>
+}
+
+templ ViewPage() {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			@CommonHeader()
+			<title>Zhteuern</title>
+		</head>
+		<body>
+			@HotReload()
+			<div
+				id="patch-update"
+				init-fetch={ WindowLocationPathname }
+				method={ http.MethodPatch }
+				retry="10"
+			></div>
+			<main id="main" class="container fluid">
+				@ViewNavigation()
+				@DialogQRCode()
+				@WrapPage(&wrapPageParams{name: income}) {
+					{{
+						inputToKey := map[string]string{
+							year:          "n",
+							communeId:     "e",
+							grossSalary:   "i",
+							ahvBeitrag:    "l",
+							alvBeitrag:    "u",
+							ktgBeitrag:    "y",
+							bvgBeitrag:    "g",
+							taxableSalary: "o",
+						}
+						beitragMap := map[string]string{
+							ahvBeitrag: "AHV",
+							alvBeitrag: "ALV",
+							ktgBeitrag: "KTG",
+							bvgBeitrag: "BVG",
+						}
+					}}
+					<article>
+						<section style="display: grid; grid-auto-flow: column;">
+							<div style="padding: 2%;">
+								<label for={ year }>
+									Tax Year
+									<kbd>{ inputToKey[year] }</kbd>
+								</label>
+								<select name={ year } id={ year } key-down={ inputToKey[year] }>
+									<option value="2024">2024</option>
+									<option value="2025">2025</option>
+								</select>
+							</div>
+							<div style="padding: 2%;">
+								<label for={ communeId }>
+									Commune
+									<kbd>{ inputToKey[communeId] }</kbd>
+								</label>
+								<select name={ communeId } id={ communeId } key-down={ inputToKey[communeId] }>
+									for _, v := range taxes.EstIncomeRateList25 {
+										<option value={ v.CommuneID }>{ v.CommuneName }</option>
+									}
+								</select>
+							</div>
+						</section>
+						<label for={ grossSalary }>
+							Gross Salary
+							<kbd>{ inputToKey[grossSalary] }</kbd>
+							[0-500000]
+						</label>
+						@InputNumeric(&inputNumericParams{
+							ID:      grossSalary,
+							keyDown: inputToKey[grossSalary],
+						})
+						<section
+							id="beitrag"
+							name="beitrag"
+							style="display: grid; grid-auto-flow: column;"
+						>
+							Beitrag: [0-1000] use integer percentage with cents, example 666 for 6.66%
+							for _, beitrag := range []string{ahvBeitrag, alvBeitrag, ktgBeitrag, bvgBeitrag} {
+								<div style="padding: 2%;">
+									@InputNumeric(&inputNumericParams{
+										ID:      beitrag,
+										keyDown: inputToKey[beitrag],
+									})
+									<small>
+										{ beitragMap[beitrag] } <kbd>{ inputToKey[beitrag] }</kbd>
+									</small>
+								</div>
+							}
+						</section>
+						<label for={ taxableSalary }>
+							Taxable Salary
+							<kbd>{ inputToKey[taxableSalary] }</kbd>
+							[0-500000]: <small>leave at 0 if equal to Gross Salary minus Beitrag. If set then Gross Salary and Beitrag are ignored</small>
+						</label>
+						@InputNumeric(&inputNumericParams{
+							ID:      taxableSalary,
+							keyDown: inputToKey[taxableSalary],
+						})
+					</article>
+				}
+				@WrapPage(&wrapPageParams{name: investment}) {
+					<article>
+						<label for={ investment }>Investment <kbd>n</kbd>[0-500000]</label>
+						@InputNumeric(&inputNumericParams{
+							ID:      investment,
+							keyDown: "n",
+						})
+					</article>
+				}
+				@WrapPage(&wrapPageParams{name: deduction}) {
+					{{
+						deductionLabels := map[string]string{
+							deductionTransport:       "Transport Deduction",
+							deductionProfession:      "Profession Deduction",
+							deductionThirdPillar:     "Third Pillar Deduction",
+							deductionHealthInsurance: "Health Insurance Deduction",
+							deductionMeal:            "Meal",
+							deductionOther:           "Other Deduction",
+						}
+						inputToKey := map[string]string{
+							deductionTransport:       "n",
+							deductionProfession:      "e",
+							deductionThirdPillar:     "i",
+							deductionHealthInsurance: "o",
+							deductionMeal:            "l",
+							deductionOther:           "u",
+						}
+						deductionList := []string{
+							deductionTransport,
+							deductionProfession,
+							deductionThirdPillar,
+							deductionHealthInsurance,
+							deductionMeal,
+							deductionOther,
+						}
+					}}
+					@ViewDeductionLimitsByYear()
+					<hr/>
+					for _, d := range deductionList {
+						<article>
+							<label for={ d }>{ deductionLabels[d] } <kbd>{ inputToKey[d] }</kbd>[0-500000]</label>
+							@InputNumeric(&inputNumericParams{
+								ID:      d,
+								keyDown: inputToKey[d],
+							})
+						</article>
+					}
+				}
+				@WrapPage(&wrapPageParams{name: result}) {
+					@ViewTaxReferencesByYear()
+					<hr/>
+					@ViewResult(&TaxSimulation{})
+				}
+			</main>
+		</body>
+	</html>
+}
+
+templ ViewDeductionLimitsByYear() {
+	<details>
+		<summary role="button" key-down="m">Deduction limits by year <kbd>m</kbd></summary>
+		{{
+			yearToKeyDown := map[int]string{2024: "d", 2025: "h"}
+		}}
+		for _, y := range []int{2024, 2025} {
+			<details name={ year }>
+				<summary
+					role="button"
+					class="outline"
+					key-down={ yearToKeyDown[y] }
+				>
+					{ y } <kbd>{ yearToKeyDown[y] }</kbd>
+				</summary>
+				<table class="striped">
+					<thead>
+						<tr>
+							<th>Deduction</th>
+							<th>Cantonal</th>
+							<th>Federal</th>
+						</tr>
+					</thead>
+					{{
+						deductionLimit := deductionLimitByYear[y]
+						tr := deductionLimit[deductionTransport]
+						pr := deductionLimit[deductionProfession]
+						tp := deductionLimit[deductionThirdPillar]
+						hi := deductionLimit[deductionHealthInsurance]
+						me := deductionLimit[deductionMeal]
+					}}
+					<tbody>
+						<tr>
+							<th>Transport</th>
+							<th>{ fmt.Sprintf("%.2f", tr[0]) }</th>
+							<th>{ fmt.Sprintf("%.2f", tr[1]) }</th>
+						</tr>
+						<tr>
+							<th>Profession</th>
+							<th>{ fmt.Sprintf("%.2f", pr[0]) }</th>
+							<th>{ fmt.Sprintf("%.2f", pr[1]) }</th>
+						</tr>
+						<tr>
+							<th>Third Pillar</th>
+							<th>{ fmt.Sprintf("%.2f", tp[0]) }</th>
+							<th>{ fmt.Sprintf("%.2f", tp[1]) }</th>
+						</tr>
+						<tr>
+							<th>Health Insurance</th>
+							<th>{ fmt.Sprintf("%.2f", hi[0]) }</th>
+							<th>{ fmt.Sprintf("%.2f", hi[1]) }</th>
+						</tr>
+						<tr>
+							<th>Meal</th>
+							<th>{ fmt.Sprintf("%.2f", me[0]) }</th>
+							<th>{ fmt.Sprintf("%.2f", me[1]) }</th>
+						</tr>
+					</tbody>
+				</table>
+			</details>
+		}
+	</details>
+}
+
+templ ViewTaxReferencesByYear() {
+	<details>
+		<summary role="button" key-down="m">Tax references by year <kbd>m</kbd></summary>
+		{{
+			yearToKeyDown := map[int]string{2024: "d", 2025: "h"}
+		}}
+		for _, y := range []int{2024, 2025} {
+			<details name={ year }>
+				<summary
+					role="button"
+					class="outline"
+					key-down={ yearToKeyDown[y] }
+				>{ y } <kbd>{ yearToKeyDown[y] }</kbd></summary>
+				<table class="striped">
+					<thead>
+						<tr>
+							<th colspan="8">Zurich cantonal { y }</th>
+						</tr>
+						<tr>
+							<th colspan="4">Single</th>
+							<th colspan="4">Married/Children</th>
+						</tr>
+						<tr>
+							// Single
+							<th>Bracket Range</th>
+							<th>%</th>
+							<th>Upper Salary</th>
+							<th>Upper Taxes</th>
+							// Married/Children
+							<th>Bracket Range</th>
+							<th>%</th>
+							<th>Upper Salary</th>
+							<th>Upper Taxes</th>
+						</tr>
+					</thead>
+					<tbody>
+						// Zurich rates always 13 (hopefully)
+						{{
+							singleUpperSalary := 0
+							singleUpperTaxes := 0
+							marriedUpperSalary := 0
+							marriedUpperTaxes := 0
+						}}
+						for i := range 13 {
+							{{
+								ZurichRatesSingle := taxes.ZurichRatesSingleByYear[y][i]
+								singleUpperSalary += ZurichRatesSingle.ForTheNextCHF
+								singleUpperTaxes += ZurichRatesSingle.ForTheNextCHF * ZurichRatesSingle.AdditionalPercentage / 100
+								ZurichRatesMarried := taxes.ZurichRatesMarriedChildrenByYear[y][i]
+								marriedUpperSalary += ZurichRatesMarried.ForTheNextCHF
+								marriedUpperTaxes += ZurichRatesMarried.ForTheNextCHF * ZurichRatesMarried.AdditionalPercentage / 100
+							}}
+							<tr>
+								<td>{ ZurichRatesSingle.ForTheNextCHF }</td>
+								<td>{ ZurichRatesSingle.AdditionalPercentage }</td>
+								<td>{ singleUpperSalary }</td>
+								<td>{ singleUpperTaxes }</td>
+								<td>{ ZurichRatesMarried.ForTheNextCHF }</td>
+								<td>{ ZurichRatesMarried.AdditionalPercentage }</td>
+								<td>{ marriedUpperSalary }</td>
+								<td>{ marriedUpperTaxes }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+				<table class="striped">
+					<thead>
+						<tr>
+							<th colspan="8">Federal { y }</th>
+						</tr>
+						<tr>
+							<th colspan="4">Single</th>
+							<th colspan="4">Married/Children</th>
+						</tr>
+						<tr>
+							// Single
+							<th>Bracket Range</th>
+							<th>%</th>
+							<th>Upper Salary</th>
+							<th>Upper Taxes</th>
+							// Married/Children
+							<th>Bracket Range</th>
+							<th>%</th>
+							<th>Upper Salary</th>
+							<th>Upper Taxes</th>
+						</tr>
+					</thead>
+					<tbody>
+						// Federal bracket counts are different between single and married/children
+						{{
+							singleUpperTaxes = 0
+							marriedUpperTaxes = 0
+							federalSingle := taxes.FederalRatesSingleByYear[y]
+							federalMarriedChildren := taxes.FederalRatesMarriedChildrenByYear[y]
+							rowCount := max(len(federalSingle), len(federalMarriedChildren))
+						}}
+						for i := range rowCount-1 {
+							{{
+								fs := &taxes.FederalRates{}
+								if i < len(federalSingle) {
+									fs = federalSingle[i]
+								}
+								rangeS := 0
+								if i+1 > 0 && i+1 < len(federalSingle) {
+									rangeS = federalSingle[i+1].UpTo - fs.UpTo
+								}
+								singleUpperTaxes += int(float32(rangeS) * fs.AdditionalPercentage / 100)
+								fmc := federalMarriedChildren[i]
+								rangeMC := 0
+								if i+1 > 0 && i+1 < len(federalMarriedChildren) {
+									rangeMC = federalMarriedChildren[i+1].UpTo - fmc.UpTo
+								}
+								marriedUpperTaxes += int(float32(rangeMC) * fmc.AdditionalPercentage / 100)
+							}}
+							<tr>
+								if i+1 < len(federalSingle) {
+									<td>{ rangeS }</td>
+									<td>{ fs.AdditionalPercentage }</td>
+									<td>{ federalSingle[i+1].UpTo }</td>
+									<td>{ singleUpperTaxes }</td>
+								} else {
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								}
+								<td>{ rangeMC }</td>
+								<td>{ fmc.AdditionalPercentage }</td>
+								if i+1 < len(federalMarriedChildren) {
+									<td>{ federalMarriedChildren[i+1].UpTo }</td>
+								} else {
+									<td></td>
+								}
+								<td>{ marriedUpperTaxes }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</details>
+		}
+	</details>
+}
+
+templ ViewResult(ts *TaxSimulation) {
+	<article id={ resultTaxableSalary }>
+		<h4>Taxable Salary</h4>
+		<table class="striped">
+			<colgroup>
+				<col style="width: 50%"/>
+				<col style="width: 50%"/>
+			</colgroup>
+			<tbody>
+				if ts.TaxableSalary == 0 {
+					<tr>
+						<th>Gross Salary</th>
+						<th>{ fmt.Sprintf("%.2f", float32(ts.GrossSalary)) }</th>
+					</tr>
+					<tr>
+						<th>AHV ({ fmt.Sprintf("%.2f", float32(ts.AhvBeitrag)/100) }%)</th>
+						<th>{ fmt.Sprintf("%.2f", float32(ts.AhvBeitrag*ts.GrossSalary)/10000) }</th>
+					</tr>
+					<tr>
+						<th>ALV ({ fmt.Sprintf("%.2f", float32(ts.AlvBeitrag)/100) }%)</th>
+						<th>{ fmt.Sprintf("%.2f", float32(ts.AlvBeitrag*ts.GrossSalary)/10000) }</th>
+					</tr>
+					<tr>
+						<th>KTG ({ fmt.Sprintf("%.2f", float32(ts.KtgBeitrag)/100) }%)</th>
+						<th>{ fmt.Sprintf("%.2f", float32(ts.KtgBeitrag*ts.GrossSalary)/10000) }</th>
+					</tr>
+					<tr>
+						<th>BVG ({ fmt.Sprintf("%.2f", float32(ts.BvgBeitrag)/100) }%)</th>
+						<th>{ fmt.Sprintf("%.2f", float32(ts.BvgBeitrag*ts.GrossSalary)/10000) }</th>
+					</tr>
+				}
+				<tr>
+					<th>Taxable Salary</th>
+					<th>{ fmt.Sprintf("%.2f", ts.taxableSalaryNoInvsNoDeds()) }</th>
+				</tr>
+			</tbody>
+		</table>
+	</article>
+	<article id={ resultInvsDeds }>
+		<h4>Investments and deductions</h4>
+		<table class="striped">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Reference Zurich</th>
+					<th>Reference Federal</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Taxable Salary (pre investment and deductions)</th>
+					<th>{ fmt.Sprintf("%.2f", ts.taxableSalaryNoInvsNoDeds()) }</th>
+					<th>{ fmt.Sprintf("%.2f", ts.taxableSalaryNoInvsNoDeds()) }</th>
+				</tr>
+				<tr>
+					<th>Investment</th>
+					<th>{ fmt.Sprintf("%.2f", float32(ts.Investment)) }</th>
+					<th>{ fmt.Sprintf("%.2f", float32(ts.Investment)) }</th>
+				</tr>
+				<tr>
+					<th>Transport Deduction</th>
+					{{ cantonal, federal := ts.deductionValue(deductionTransport) }}
+					<th>- { fmt.Sprintf("%.2f", cantonal) }</th>
+					<th>- { fmt.Sprintf("%.2f", federal) }</th>
+				</tr>
+				<tr>
+					<th>Profession Deduction</th>
+					{{ cantonal, federal = ts.deductionValue(deductionProfession) }}
+					<th>- { fmt.Sprintf("%.2f", cantonal) }</th>
+					<th>- { fmt.Sprintf("%.2f", federal) }</th>
+				</tr>
+				<tr>
+					<th>Third Pillar Deduction</th>
+					{{ cantonal, federal = ts.deductionValue(deductionThirdPillar) }}
+					<th>- { fmt.Sprintf("%.2f", cantonal) }</th>
+					<th>- { fmt.Sprintf("%.2f", federal) }</th>
+				</tr>
+				<tr>
+					<th>Health Insurance Deduction</th>
+					{{ cantonal, federal = ts.deductionValue(deductionHealthInsurance) }}
+					<th>- { fmt.Sprintf("%.2f", cantonal) }</th>
+					<th>- { fmt.Sprintf("%.2f", federal) }</th>
+				</tr>
+				<tr>
+					<th>Meal Deduction</th>
+					{{ cantonal, federal = ts.deductionValue(deductionMeal) }}
+					<th>- { fmt.Sprintf("%.2f", cantonal) }</th>
+					<th>- { fmt.Sprintf("%.2f", federal) }</th>
+				</tr>
+				<tr>
+					<th>Other Deduction</th>
+					<th>- { fmt.Sprintf("%.2f", float32(ts.DeductionOther)) }</th>
+					<th>- { fmt.Sprintf("%.2f", float32(ts.DeductionOther)) }</th>
+				</tr>
+				<tr>
+					<th>Taxable Salary (post investment and deductions)</th>
+					<th>{ fmt.Sprintf("%.2f", float32(ts.taxableSalaryZurich())) }</th>
+					<th>{ fmt.Sprintf("%.2f", float32(ts.taxableSalaryFederal())) }</th>
+				</tr>
+			</tbody>
+		</table>
+	</article>
+	<article id={ resultNet }>
+		{{
+			eir, err := taxes.GetEstvIncomeRate(ts.CommuneID, ts.Year)
+			if err != nil {
+				eir = &taxes.EstvIncomeRate{}
+			}
+		}}
+		<h4>Total Taxes</h4>
+		<h6>Reference Year: { ts.Year }</h6>
+		<table class="striped">
+			<thead>
+				<tr>
+					<th colspan="5">Cantonal and communal taxes</th>
+				</tr>
+				<tr>
+					<th><article>Taxable: { fmt.Sprintf("%.2f", float32(ts.taxableSalaryZurich())) }</article></th>
+					<th>Single</th>
+					<th>Single Marginal %</th>
+					<th>Married/Children</th>
+					<th>Married/Children Marginal %</th>
+				</tr>
+			</thead>
+			{{
+				baseZurichSingle, zrSingle := taxes.GetBaseZurichSingle(ts.Year, float32(ts.taxableSalaryZurich()))
+				baseZurichMS, zrMS := taxes.GetBaseZurichMarriedChildren(ts.Year, float32(ts.taxableSalaryZurich()))
+
+				cantonalZurichSingle := 0.98 * baseZurichSingle
+				cantonalPercentageSingle := 0.98 * float32(zrSingle.AdditionalPercentage)
+				cantonalZurichMS := 0.98 * baseZurichMS
+				cantonalPercentageMS := 0.98 * float32(zrMS.AdditionalPercentage)
+
+				communalMultiplier := float32(eir.CommuneMultiplier) / 100
+				communalZurichSingle := communalMultiplier * baseZurichSingle
+				communalPercentageSingle := communalMultiplier * float32(zrSingle.AdditionalPercentage)
+				communalZurichMS := communalMultiplier * baseZurichMS
+				communalPercentageMS := communalMultiplier * float32(zrMS.AdditionalPercentage)
+			}}
+			<tbody>
+				<tr>
+					<th>Base Cantonal Tax</th>
+					<th>{ fmt.Sprintf("%.2f", baseZurichSingle) }</th>
+					<th>{ zrSingle.AdditionalPercentage }</th>
+					<th>{ fmt.Sprintf("%.2f", baseZurichMS) }</th>
+					<th>{ zrMS.AdditionalPercentage }</th>
+				</tr>
+				<tr>
+					<th>Cantonal (multiplier = 0.98)</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalZurichSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalPercentageSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalZurichMS) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalPercentageMS) }</th>
+				</tr>
+				<tr>
+					<th>Communal { eir.CommuneName } (multiplier = { fmt.Sprintf("%.2f", communalMultiplier) })</th>
+					<th>{ fmt.Sprintf("%.2f", communalZurichSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", communalPercentageSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", communalZurichMS) }</th>
+					<th>{ fmt.Sprintf("%.2f", communalPercentageMS) }</th>
+				</tr>
+				<tr>
+					<th>Cantonal + Communal  (multiplier = { fmt.Sprintf("%.2f", 0.98+ communalMultiplier) })</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalZurichSingle + communalZurichSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalPercentageSingle + communalPercentageSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalZurichMS + communalZurichMS) }</th>
+					<th>{ fmt.Sprintf("%.2f", cantonalPercentageMS + communalPercentageMS) }</th>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th colspan="5">Federal taxes</th>
+				</tr>
+				<tr>
+					<th><article>Taxable: { fmt.Sprintf("%.2f", float32(ts.taxableSalaryFederal())) }</article></th>
+					<th>Single</th>
+					<th>Single Marginal %</th>
+					<th>Married/Children</th>
+					<th>Married/Children Marginal %</th>
+				</tr>
+			</thead>
+			{{
+				baseFederalSingle, fSingle := taxes.GetBaseFederalSingle(ts.Year, float32(ts.taxableSalaryFederal()))
+				baseFederalMS, fMS := taxes.GetBaseFederalMarriedChildren(ts.Year, float32(ts.taxableSalaryFederal()))
+			}}
+			<tbody>
+				<tr>
+					<th>Federal Taxes</th>
+					<th>{ fmt.Sprintf("%.2f", baseFederalSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", fSingle.AdditionalPercentage) }</th>
+					<th>{ fmt.Sprintf("%.2f", baseFederalMS) }</th>
+					<th>{ fmt.Sprintf("%.2f", fMS.AdditionalPercentage) }</th>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th colspan="5">Total taxes</th>
+				</tr>
+				<tr>
+					<th></th>
+					<th>Single</th>
+					<th>Single Marginal %</th>
+					<th>Married/Children</th>
+					<th>Married/Children Marginal %</th>
+				</tr>
+			</thead>
+			{{
+				totalSingle := baseFederalSingle + cantonalZurichSingle + communalZurichSingle
+				totalSinglePerc := fSingle.AdditionalPercentage + cantonalPercentageSingle + communalPercentageSingle
+				totalMS := baseFederalMS + cantonalZurichMS + communalZurichMS
+				totalMSPerc := fSingle.AdditionalPercentage + cantonalPercentageMS + communalPercentageMS
+			}}
+			<tbody>
+				<tr>
+					<th>Total</th>
+					<th>{ fmt.Sprintf("%.2f", totalSingle) }</th>
+					<th>{ fmt.Sprintf("%.2f", totalSinglePerc) }</th>
+					<th>{ fmt.Sprintf("%.2f", totalMS) }</th>
+					<th>{ fmt.Sprintf("%.2f", totalMSPerc) }</th>
+				</tr>
+			</tbody>
+		</table>
+	</article>
+	<article id={ resultQs }>
+		<h4>Quellensteuer</h4>
+		{{
+			referenceSalary := float32(ts.GrossSalary)
+			oneThirteenSalary := referenceSalary / 13
+			oneThirteenQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, oneThirteenSalary)) / 100
+			oneThirteenQs := oneThirteenSalary * oneThirteenQsPerc / 100
+
+			twoThirteenSalary := oneThirteenSalary * 2
+			twoThirteenQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, twoThirteenSalary)) / 100
+			twoThirteenQs := twoThirteenSalary * twoThirteenQsPerc / 100
+
+			weightQsPerc := (11*oneThirteenQsPerc + 2*twoThirteenQsPerc) / 13
+			totalQs13 := oneThirteenQs*11 + twoThirteenQs
+		}}
+		<h6>Reference Annual Salary (Gross Salary): { referenceSalary }</h6>
+		<h6>Considering the A0N case (single, no children, no church)</h6>
+		<table class="striped">
+			<thead>
+				<tr>
+					<th colspan="5">13 Months</th>
+				</tr>
+				<tr>
+					<th>Count</th>
+					<th>Fraction</th>
+					<th>Monthly Salary</th>
+					<th>Qs %</th>
+					<th>Qs</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>11</th>
+					<th>1/13</th>
+					<th>{ fmt.Sprintf("%.2f",oneThirteenSalary) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneThirteenQsPerc) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneThirteenQs) }</th>
+				</tr>
+				<tr>
+					<th>1</th>
+					<th>2/13</th>
+					<th>{ fmt.Sprintf("%.2f",twoThirteenSalary) }</th>
+					<th>{ fmt.Sprintf("%.2f",twoThirteenQsPerc) }</th>
+					<th>{ fmt.Sprintf("%.2f",twoThirteenQs) }</th>
+				</tr>
+				<tr>
+					<th colspan="3">Weighted Qs % average and total Qs</th>
+					<th>{ fmt.Sprintf("%.2f",weightQsPerc) }</th>
+					<th>{ fmt.Sprintf("%.2f",totalQs13) }</th>
+				</tr>
+			</tbody>
+		</table>
+		<table class="striped">
+			<thead>
+				<tr>
+					<th colspan="5">12 Months</th>
+				</tr>
+				<tr>
+					<th>Count</th>
+					<th>Fraction</th>
+					<th>Monthly Salary</th>
+					<th>Qs %</th>
+					<th>Qs</th>
+				</tr>
+			</thead>
+			{{
+				oneTwelveSalary := referenceSalary / 12
+				oneTwelveQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, oneTwelveSalary)) / 100
+				oneTwelveQs := oneTwelveSalary * oneTwelveQsPerc / 100
+				totalQs12 := oneTwelveQs * 12
+			}}
+			<tbody>
+				<tr>
+					<th>12</th>
+					<th>1/12</th>
+					<th>{ fmt.Sprintf("%.2f",oneTwelveSalary) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneTwelveQsPerc) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneTwelveQs) }</th>
+				</tr>
+				<tr>
+					<th colspan="3">Weighted Qs % average and total Qs</th>
+					<th>{ fmt.Sprintf("%.2f",oneTwelveQsPerc) }</th>
+					<th>{ fmt.Sprintf("%.2f",totalQs12) }</th>
+				</tr>
+			</tbody>
+		</table>
+		<h6>Delta (Qs 13 Months) - (Qs 12 Months): { fmt.Sprintf("%.2f",totalQs13-totalQs12) }</h6>
+		<h6>Delta (Total Taxes Single) - (Qs 13 Months): { fmt.Sprintf("%.2f",totalSingle-totalQs13) }</h6>
+	</article>
+}

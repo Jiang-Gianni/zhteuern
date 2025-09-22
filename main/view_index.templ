@@ -1,0 +1,133 @@
+package main
+
+import "net/http"
+
+templ CommonHeader() {
+	<meta charset="utf-8"/>
+	<meta name="description" content="Zhteuern"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="color-scheme" content="dark"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta http-equiv="Cache-control" content="public"/>
+	<meta name="view-transition" content="same-origin"/>
+	if environment != EnvironmentDEV {
+		<script type="module" src={ asset.BrotliZhteuernJs } defer></script>
+		<link rel="stylesheet" href={ asset.BrotliStyleCss }/>
+		<link rel="stylesheet" href={ asset.BrotliPicoBlueCss }/>
+	} else {
+		<script type="module" src={ BrotliZhteuernJs } defer></script>
+		<link rel="stylesheet" href={ BrotliStyleCss }/>
+		<link rel="stylesheet" href={ BrotliPicoBlueCss }/>
+		// if environment == EnvironmentDEV {
+		// 	<link rel="stylesheet" href={ BrotliCtCss }/>
+		// }
+	}
+	<link rel="icon" href="data:,"/>
+}
+
+templ HotReload() {
+	{{ isDev := environment == EnvironmentDEV }}
+	if isDev {
+		<div id="hot-reload" init-fetch="/hot" method={ http.MethodPatch } retry="10"></div>
+	}
+}
+
+templ ViewIndex() {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			<title>Zhteuern</title>
+			@CommonHeader()
+		</head>
+		<body>
+			@HotReload()
+			<main id="main" class="container fluid active">
+				<section>
+					<h2>There are two certanties in life:</h2>
+					<li><card>Death</card></li>
+					<li><card><del>Steueramt coming for you</del> Taxes</card></li>
+				</section>
+				<form action="/" method="post">
+					<h2>TLDR</h2>
+					<button autofocus key-down="s" type="submit" role="button">
+						Start Simulation
+						<kbd>s</kbd>
+					</button>
+				</form>
+			</main>
+		</body>
+	</html>
+}
+
+templ BackToHomeButton() {
+	<a href="/" role="button" key-down="t" autofocus>Back to home <kbd>[t]</kbd></a>
+}
+
+templ ViewPageNotFound() {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			<title>Page Not Found</title>
+			@CommonHeader()
+		</head>
+		<body data-theme="dark">
+			<main id="main" class="container fluid active">
+				<section>
+					<h1>Page not found</h1>
+					<card>The page you're looking for doesn't exist.</card>
+					<br/>
+					<card>Sorry. Well, not really ¯\_(ツ)_/¯</card>
+				</section>
+				@BackToHomeButton()
+			</main>
+		</body>
+	</html>
+}
+
+templ ViewInternalError() {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			<title>Internal Error</title>
+			@CommonHeader()
+		</head>
+		<body data-theme="dark">
+			<main id="main" class="container fluid active">
+				<section>
+					<h1>Internal Error</h1>
+					<card>An internal error happened.</card>
+					<br/>
+					<card>Sorry. Well, not really ¯\_(ツ)_/¯</card>
+				</section>
+				@BackToHomeButton()
+			</main>
+		</body>
+	</html>
+}
+
+type inputNumericParams struct {
+	ID      string
+	keyDown string
+}
+
+templ InputNumeric(i *inputNumericParams) {
+	<input
+		id={ i.ID }
+		name={ i.ID }
+		key-down={ i.keyDown }
+		pattern="\d*"
+		inputmode="numeric"
+		type="number"
+	/>
+}
+
+type wrapPageParams struct {
+	name string
+}
+
+templ WrapPage(w *wrapPageParams) {
+	<section class={ page } name={ w.name } input-fetch={ WindowLocationPathname } method={ http.MethodPost }>
+		<input name={ page } value={ w.name } hidden/>
+		{ children... }
+	</section>
+}
