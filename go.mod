@@ -5,7 +5,6 @@ go 1.25.1
 require (
 	github.com/a-h/templ v0.3.943
 	github.com/andybalholm/brotli v1.2.0
-	github.com/benbjohnson/hashfs v0.2.2
 	github.com/evanw/esbuild v0.25.10
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-rod/rod v0.116.2

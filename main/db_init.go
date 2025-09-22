@@ -20,7 +20,7 @@ const sqlitePragmaStuff = `
 	pragma foreign_keys = ON;
 `
 
-//go:embed sql/create_table.sql
+//go:embed db_tax_simulation.sql
 var createTableSQL string
 
 func (s *Server) InitDatabase(ctx context.Context) error {

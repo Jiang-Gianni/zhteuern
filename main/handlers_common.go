@@ -15,7 +15,6 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/andybalholm/brotli"
-	"github.com/benbjohnson/hashfs"
 	"github.com/valyala/bytebufferpool"
 )
 
@@ -82,26 +81,22 @@ func (s *Server) AllowedRequest(ahh httpHandlerFunc) httpHandlerFunc {
 	}
 }
 
-//go:embed all:brotli
-var assetsFs embed.FS
-var assetFsys = hashfs.NewFS(assetsFs)
+var (
+	//go:embed all:brotli
+	assetsFs embed.FS
 
-type assetList struct {
-	BrotliZhteuernJs, BrotliPicoBlueCss, BrotliStyleCss string
-}
-
-var asset = &assetList{
-	BrotliZhteuernJs:  "/" + assetFsys.HashName(strings.TrimPrefix(BrotliZhteuernJs, "/")),
-	BrotliPicoBlueCss: "/" + assetFsys.HashName(strings.TrimPrefix(BrotliPicoBlueCss, "/")),
-	BrotliStyleCss:    "/" + assetFsys.HashName(strings.TrimPrefix(BrotliStyleCss, "/")),
-}
+	assetHashFS           = NewHashFS(assetsFs)
+	hashBrotliZhteuernJs  = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliZhteuernJs, "/"))
+	hashBrotliPicoBlueCss = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliPicoBlueCss, "/"))
+	hashBrotliStyleCss    = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliStyleCss, "/"))
+)
 
 func (s *Server) GetAssetsHandler() httpHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set(ContentEncoding, "br")
 
 		if environment != EnvironmentDEV {
-			hashfs.FileServer(assetFsys).ServeHTTP(w, r)
+			assetHashFS.ServeHTTP(w, r)
 			return nil
 		}
 

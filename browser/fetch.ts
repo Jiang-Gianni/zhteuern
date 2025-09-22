@@ -218,7 +218,7 @@ export async function elementFetch(el: Element, endpoint: string | null) {
         endpoint = window.location.pathname
     }
     if (endpoint.startsWith("eval")) {
-        endpoint = eval(endpoint)
+        endpoint = window.eval(endpoint)
     }
     var method = el.getAttribute('method') || 'GET'
     var success = false

@@ -1,13 +1,14 @@
 version: "2"
 sql:
-  - schema: "./main/sql"
-    queries: "./main/sql"
+  - schema: "./main/db_tax_simulation.sql"
+    queries: "./main/db_queries.sql"
     engine: "sqlite"
     gen:
       go:
         package: "main"
         out: "main"
-        output_models_file_name: "db_models.go"
+        output_models_file_name: "db_tax_simulation.sql.go"
+        output_db_file_name: "db.sql.go"
         overrides:
           - db_type: "int"
             go_type: "int"
@@ -18,7 +19,8 @@ sql:
       go:
         package: "main"
         out: "main"
-        output_models_file_name: "log_sqlite_models.go"
+        output_models_file_name: "log_sqlite_models.sql.go"
+        output_db_file_name: "db.sql.go"
         overrides:
           - db_type: "int"
             go_type: "int"

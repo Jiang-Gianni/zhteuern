@@ -149,7 +149,7 @@ func (s *Server) TaxSimulationHandler() httpHandlerFunc {
 				})
 			case investment:
 				err = s.writeDB.UpdateTSInvestment(ctx, UpdateTSInvestmentParams{
-					Investment:      formInt(inputMap[investment], maxSalary),
+					Investment:      formInt(inputMap[investmentID], maxSalary),
 					TaxSimulationID: tsID,
 				})
 			case deduction:
@@ -172,8 +172,8 @@ func (s *Server) TaxSimulationHandler() httpHandlerFunc {
 		case http.MethodPatch:
 			w.Header().Set(ContentEncoding, "br")
 
-			// b := brotli.NewWriterLevel(w, 3)
-			b := brotli.NewWriterLevel(&countPrinter{w: w}, 3)
+			b := brotli.NewWriterLevel(w, 3)
+			// b := brotli.NewWriterLevel(&countPrinter{w: w}, 3)
 			sse, err := StartSSE(w, r)
 			if err != nil {
 				return fmt.Errorf("startSSE: %w", err)
@@ -236,6 +236,8 @@ func (s *Server) TaxSimulationHandler() httpHandlerFunc {
 		}
 	}
 }
+
+var _ io.Writer = (*countPrinter)(nil)
 
 type countPrinter struct {
 	w io.Writer
@@ -332,7 +334,7 @@ func (ts *TaxSimulation) toBrowserUpdates() (out []*browser.Update) {
 		deductionHealthInsurance: ts.DeductionHealthInsurance,
 		deductionMeal:            ts.DeductionMeal,
 		deductionOther:           ts.DeductionOther,
-		investment:               ts.Investment,
+		investmentID:             ts.Investment,
 	}
 	for id, value := range valueByID {
 		out = append(out, &browser.Update{

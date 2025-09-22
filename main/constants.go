@@ -14,7 +14,7 @@ const (
 	year          = "year"
 	communeId     = "commune_id"
 
-	// investment = "investment" // already declared
+	investmentID = "investment_id" // already declared
 
 	deductionTransport       = "deduction_transport"
 	deductionProfession      = "deduction_profession"

@@ -192,9 +192,9 @@ templ ViewPage() {
 				}
 				@WrapPage(&wrapPageParams{name: investment}) {
 					<article>
-						<label for={ investment }>Investment <kbd>n</kbd>[0-500000]</label>
+						<label for={ investmentID }>Investment <kbd>n</kbd>[0-500000]</label>
 						@InputNumeric(&inputNumericParams{
-							ID:      investment,
+							ID:      investmentID,
 							keyDown: "n",
 						})
 					</article>
@@ -228,15 +228,17 @@ templ ViewPage() {
 					}}
 					@ViewDeductionLimitsByYear()
 					<hr/>
-					for _, d := range deductionList {
-						<article>
-							<label for={ d }>{ deductionLabels[d] } <kbd>{ inputToKey[d] }</kbd>[0-500000]</label>
-							@InputNumeric(&inputNumericParams{
-								ID:      d,
-								keyDown: inputToKey[d],
-							})
-						</article>
-					}
+					<article style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+						for _, d := range deductionList {
+							<section>
+								<label for={ d }>{ deductionLabels[d] } <kbd>{ inputToKey[d] }</kbd></label>
+								@InputNumeric(&inputNumericParams{
+									ID:      d,
+									keyDown: inputToKey[d],
+								})
+							</section>
+						}
+					</article>
 				}
 				@WrapPage(&wrapPageParams{name: result}) {
 					@ViewTaxReferencesByYear()

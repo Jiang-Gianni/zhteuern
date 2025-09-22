@@ -11,16 +11,14 @@ templ CommonHeader() {
 	<meta http-equiv="Cache-control" content="public"/>
 	<meta name="view-transition" content="same-origin"/>
 	if environment != EnvironmentDEV {
-		<script type="module" src={ asset.BrotliZhteuernJs } defer></script>
-		<link rel="stylesheet" href={ asset.BrotliStyleCss }/>
-		<link rel="stylesheet" href={ asset.BrotliPicoBlueCss }/>
+		<script type="module" src={ hashBrotliZhteuernJs } defer></script>
+		<link rel="stylesheet" href={ hashBrotliStyleCss }/>
+		<link rel="stylesheet" href={ hashBrotliPicoBlueCss }/>
 	} else {
 		<script type="module" src={ BrotliZhteuernJs } defer></script>
 		<link rel="stylesheet" href={ BrotliStyleCss }/>
 		<link rel="stylesheet" href={ BrotliPicoBlueCss }/>
-		// if environment == EnvironmentDEV {
-		// 	<link rel="stylesheet" href={ BrotliCtCss }/>
-		// }
+		// <link rel="stylesheet" href={ BrotliCtCss }/>
 	}
 	<link rel="icon" href="data:,"/>
 }
@@ -43,14 +41,61 @@ templ ViewIndex() {
 			@HotReload()
 			<main id="main" class="container fluid active">
 				<section>
-					<h2>There are two certanties in life:</h2>
-					<li><card>Death</card></li>
-					<li><card><del>Steueramt coming for you</del> Taxes</card></li>
+					<h2>Zhteuern</h2>
+					<article>
+						If you see a letter (example <kbd>s</kbd>): you can press the key on your keyboard instead of mouse clicking
+					</article>
+					<article>
+						Canton Zurich only. Here the source code if you want to copy and adapt for a different canton
+						<a
+							key-down="q"
+							href="https://github.com/Jiang-Gianni/zhteuern"
+							target="_blank"
+						><b>link</b> <kbd>q</kbd></a>
+					</article>
+					<article>
+						<b>This website may contain wrong information.</b>
+						<br/>
+						Please refer to the official documentation at:
+						<li>
+							<a
+								key-down="w"
+								href="https://www.zh.ch/de/steuern-finanzen/steuern/steuern-natuerliche-personen/steuererklaerung-natuerliche-personen.html"
+								target="_blank"
+							>
+								<b>https://www.zh.ch/de/steuern-finanzen/steuern/steuern-natuerliche-personen/steuererklaerung-natuerliche-personen.html</b> <kbd>w</kbd>
+							</a>
+						</li>
+						<li>
+							<a
+								key-down="f"
+								href="https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuer-tarife.html"
+								target="_blank"
+							>
+								<b>https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuer-tarife.html</b> <kbd>f</kbd>
+							</a>
+						</li>
+						<li>
+							<a
+								key-down="p"
+								href="https://www.estv.admin.ch/estv/en/home/fta/tax-statistics/calculate-taxes.html"
+								target="_blank"
+							>
+								<b>https://www.estv.admin.ch/estv/en/home/fta/tax-statistics/calculate-taxes.html</b> <kbd>p</kbd>
+							</a>
+						</li>
+					</article>
+					<article>
+						If you have multiple browser pages opened on the same tax simulation: any update on a browser <del>will</del> should be synced to the other browser pages as well.
+						<br/>
+					</article>
+					<article>
+						This website may not work properly on Firefox or mobile
+					</article>
 				</section>
-				<form action="/" method="post">
-					<h2>TLDR</h2>
+				<form action="/" method={ http.MethodPost } target="_blank">
 					<button autofocus key-down="s" type="submit" role="button">
-						Start Simulation
+						Start Tax Simulation
 						<kbd>s</kbd>
 					</button>
 				</form>

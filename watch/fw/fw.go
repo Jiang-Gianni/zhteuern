@@ -88,14 +88,14 @@ var fws = []*FW{
 		regexMatch: regexp.MustCompile(`main\/assets\/.*`),
 		run:        brotliFunc(),
 	},
-	{
-		// https://github.com/bufbuild/buf
-		name:       "buf",
-		regexMatch: regexp.MustCompile(`/*.proto$`),
-		run: func(e fsnotify.Event) {
-			RunCmd(exec.Command("buf", "generate"))
-		},
-	},
+	// {
+	// 	// https://github.com/bufbuild/buf
+	// 	name:       "buf",
+	// 	regexMatch: regexp.MustCompile(`/*.proto$`),
+	// 	run: func(e fsnotify.Event) {
+	// 		RunCmd(exec.Command("buf", "generate"))
+	// 	},
+	// },
 	// {
 	// 	// https://github.com/yuin/goldmark
 	// 	name:       "markdown",

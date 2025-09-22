@@ -16,18 +16,30 @@ const (
 	host = "http://localhost:3000"
 )
 
-// go test ./test -rod=show
+// go test ./test -rod="show,trace,slow=1s"
 func TestTaxSimulation(t *testing.T) {
 	browser := rod.New().MustConnect()
 	defer browser.MustClose()
 
-	page1 := browser.MustPage(host).MustWaitDOMStable()
+	homePage := browser.MustPage(host).MustWaitDOMStable()
 
 	// Start Tax Simulation button
-	page1.MustElement("button[key-down='s']")
-	if err := page1.Keyboard.Press(input.KeyS); err != nil {
+	homePage.MustElement("button[key-down='s']")
+	if err := homePage.Keyboard.Press(input.KeyS); err != nil {
 		t.Fatalf("s key press: %v", err)
 	}
+	homePage.MustWaitDOMStable()
+
+	// Tax Simulation should be opened in a new page
+	pages, err := browser.Pages()
+	if err != nil {
+		t.Fatalf("browser.Pages: %v", err)
+	}
+	if len(pages) != 2 {
+		t.Fatalf("expected 2 pages")
+	}
+	// Active page is at index 0
+	page1 := pages[0]
 	page1.MustWaitDOMStable()
 
 	i := page1.MustInfo()
@@ -36,7 +48,7 @@ func TestTaxSimulation(t *testing.T) {
 		"#income",
 	)
 	if len(tsID) != 16 {
-		t.Fatalf("expected tsID of length 8 for url %s", i.URL)
+		t.Fatalf("expected tsID of length 16 for url %s", i.URL)
 	}
 
 	// Check QR Code

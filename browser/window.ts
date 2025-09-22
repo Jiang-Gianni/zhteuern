@@ -27,7 +27,6 @@ window.addEventListener('keydown', (event) => {
 function setActivePage() {
     var hash = window.location.hash
     if (hash == null || hash == '') {
-        console.warn('empty hash');
         return
     }
     document.querySelectorAll(`section.page.active`).forEach((el) => {
