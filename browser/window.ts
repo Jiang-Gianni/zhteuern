@@ -15,7 +15,9 @@ window.addEventListener('keydown', (event) => {
             event.target.value = "0"
         }
     }
-    let target = document.querySelectorAll(`.active [key-down='${event.key}'], #navigation [key-down='${event.key}']`);
+    let target = [...document.querySelectorAll(`[key-down='${event.key}']`)].filter(
+        (el) => { return el.checkVisibility() }
+    );
     if (target.length > 0) {
         event.preventDefault();
         (target[0] as any).scrollIntoViewIfNeeded();
@@ -23,22 +25,6 @@ window.addEventListener('keydown', (event) => {
         (target[0] as HTMLElement).click();
     }
 });
-
-function setActivePage() {
-    var hash = window.location.hash
-    if (hash == null || hash == '') {
-        return
-    }
-    document.querySelectorAll(`section.page.active`).forEach((el) => {
-        el.classList.remove('active')
-    })
-    document.querySelectorAll(`section.page[name="${hash.slice(1)}"]`).forEach((el) => {
-        el.classList.add('active')
-    })
-}
-
-setActivePage()
-window.addEventListener('hashchange', setActivePage)
 
 window.addEventListener('click', (event) => {
     var el = event.target as Element

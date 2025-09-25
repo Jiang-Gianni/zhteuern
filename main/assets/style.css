@@ -14,7 +14,19 @@ section.page {
     display: none;
 }
 
-section.page.active {
+#main:has(#income:target) section.page[name='income'] {
+    display: block;
+}
+
+#main:has(#investment:target) section.page[name='investment'] {
+    display: block;
+}
+
+#main:has(#deduction:target) section.page[name='deduction'] {
+    display: block;
+}
+
+#main:has(#result:target) section.page[name='result'] {
     display: block;
 }
 

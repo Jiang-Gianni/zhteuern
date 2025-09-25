@@ -1,6 +1,3 @@
-const CHECKED = "checked";
-const VALUE = "value";
-
 interface Update {
     selector: string;
     text: { [key: string]: string };
