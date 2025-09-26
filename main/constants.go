@@ -38,6 +38,7 @@ const (
 	BrotliPicoBlueCss = "/brotli/picoBlue.css"
 	BrotliPicoCss     = "/brotli/pico.css"
 	BrotliStyleCss    = "/brotli/style.css"
+	BrotliFaviconPng  = "/brotli/favicon.png"
 
 	// https://csswizardry.com/ct/
 	BrotliCtCss = "/brotli/ct.css"

@@ -11,16 +11,17 @@ templ CommonHeader() {
 	<meta http-equiv="Cache-control" content="public"/>
 	<meta name="view-transition" content="same-origin"/>
 	if environment != EnvironmentDEV {
+		<link rel="icon" type="image/png" href={ hashBrotliFaviconPng }/>
 		<script type="module" src={ hashBrotliZhteuernJs } defer></script>
 		<link rel="stylesheet" href={ hashBrotliStyleCss }/>
 		<link rel="stylesheet" href={ hashBrotliPicoBlueCss }/>
 	} else {
+		<link rel="icon" type="image/png" href={ BrotliFaviconPng }/>
 		<script type="module" src={ BrotliZhteuernJs } defer></script>
 		<link rel="stylesheet" href={ BrotliStyleCss }/>
 		<link rel="stylesheet" href={ BrotliPicoBlueCss }/>
 		// <link rel="stylesheet" href={ BrotliCtCss }/>
 	}
-	<link rel="icon" href="data:,"/>
 }
 
 templ HotReload() {

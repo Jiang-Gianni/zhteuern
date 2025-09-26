@@ -89,6 +89,7 @@ var (
 	hashBrotliZhteuernJs  = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliZhteuernJs, "/"))
 	hashBrotliPicoBlueCss = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliPicoBlueCss, "/"))
 	hashBrotliStyleCss    = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliStyleCss, "/"))
+	hashBrotliFaviconPng  = "/" + assetHashFS.HashName(strings.TrimPrefix(BrotliFaviconPng, "/"))
 )
 
 func (s *Server) GetAssetsHandler() httpHandlerFunc {
