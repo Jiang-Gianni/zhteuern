@@ -1,4 +1,3 @@
-ENV ?= dev
 GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 
 a:
@@ -8,10 +7,10 @@ w:
 	@go run watch/fw/fw.go
 
 b:
-	@go build -ldflags="-w -s -X main.environment=${ENV} -X main.gitCommit=${GIT_COMMIT}" -o bin/main ./main/*.go
+	@go build -ldflags="-w -s -X main.environment=prod -X main.gitCommit=${GIT_COMMIT}" -o bin/main ./main/*.go
 
 run:
-	@go run -ldflags="-w -s -X main.environment=${ENV} -X main.gitCommit=${GIT_COMMIT}" ./main/*.go
+	@go run -ldflags="-w -s -X main.environment=dev -X main.gitCommit=${GIT_COMMIT} -X main.host=localhost:3000" ./main/*.go
 
 # Compress binary
 u:

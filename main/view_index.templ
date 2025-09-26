@@ -46,7 +46,9 @@ templ ViewIndex() {
 						If you see a letter (example <kbd>s</kbd>): you can press the key on your keyboard instead of mouse clicking
 					</article>
 					<article>
-						Canton Zurich only. Here the source code if you want to copy and adapt for a different canton
+						Canton Zurich only. No personal information is being stored.
+						<br/>
+						Here the source code if you want to verify or adapt for a different canton
 						<a
 							key-down="q"
 							href="https://github.com/Jiang-Gianni/zhteuern"
@@ -94,7 +96,7 @@ templ ViewIndex() {
 					</article>
 				</section>
 				<form action="/" method={ http.MethodPost } target="_blank">
-					<button autofocus key-down="s" type="submit" role="button">
+					<button key-down="s" type="submit" role="button">
 						Start Tax Simulation
 						<kbd>s</kbd>
 					</button>
@@ -105,7 +107,7 @@ templ ViewIndex() {
 }
 
 templ BackToHomeButton() {
-	<a href="/" role="button" key-down="t" autofocus>Back to home <kbd>[t]</kbd></a>
+	<a href="/" role="button" key-down="t" autofocus>Back to home <kbd>t</kbd></a>
 }
 
 templ ViewPageNotFound() {

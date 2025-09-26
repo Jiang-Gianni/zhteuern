@@ -166,7 +166,7 @@ templ ViewPage() {
 							name="beitrag"
 							style="display: grid; grid-auto-flow: column;"
 						>
-							Beitrag: [0-1000] use integer percentage with cents, example 666 for 6.66%
+							Beitrag: [0-1000] use percentage multiplied by 100, example 666 for 6.66%
 							for _, beitrag := range []string{ahvBeitrag, alvBeitrag, ktgBeitrag, bvgBeitrag} {
 								<div style="padding: 2%;">
 									@InputNumeric(&inputNumericParams{

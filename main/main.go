@@ -14,7 +14,7 @@ var (
 	environment = "dev"
 	gitCommit   = "gitCommit"
 	application = "zhteuern"
-	host        = "localhost:3000"
+	host        = "zhteuern.giannijiang.vip"
 	port        = "3000"
 )
 
