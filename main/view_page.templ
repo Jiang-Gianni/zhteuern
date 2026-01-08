@@ -115,19 +115,17 @@ templ ViewPage() {
 							year:          "n",
 							communeId:     "e",
 							grossSalary:   "i",
-							ahvBeitrag:    "l",
-							alvBeitrag:    "u",
-							ktgBeitrag:    "y",
-							bvgBeitrag:    "g",
+							ktgBeitrag:    "l",
+							bvgBeitrag:    "u",
 							taxableSalary: "o",
 						}
 						beitragMap := map[string]string{
-							ahvBeitrag: "AHV",
-							alvBeitrag: "ALV",
 							ktgBeitrag: "KTG",
 							bvgBeitrag: "BVG",
 						}
 					}}
+					@ViewContributionRatesByYear()
+					<hr/>
 					<article>
 						<section style="display: grid; grid-auto-flow: column;">
 							<div style="padding: 2%;">
@@ -167,7 +165,7 @@ templ ViewPage() {
 							style="display: grid; grid-auto-flow: column;"
 						>
 							Beitrag: [0-1000] use percentage multiplied by 100, example 666 for 6.66%
-							for _, beitrag := range []string{ahvBeitrag, alvBeitrag, ktgBeitrag, bvgBeitrag} {
+							for _, beitrag := range []string{ktgBeitrag, bvgBeitrag} {
 								<div style="padding: 2%;">
 									@InputNumeric(&inputNumericParams{
 										ID:      beitrag,
@@ -248,6 +246,49 @@ templ ViewPage() {
 			</main>
 		</body>
 	</html>
+}
+
+templ ViewContributionRatesByYear() {
+	<details>
+		<summary role="button" key-down="m">Contribution (AHV, ALV) rates by year <kbd>m</kbd></summary>
+		{{
+			yearToKeyDown := map[int]string{2024: "d", 2025: "h"}
+		}}
+		for _, y := range []int{2024, 2025} {
+			<details name={ year }>
+				<summary
+					role="button"
+					class="outline"
+					key-down={ yearToKeyDown[y] }
+				>
+					{ y } <kbd>{ yearToKeyDown[y] }</kbd>
+				</summary>
+				<table class="striped">
+					<thead>
+						<tr>
+							<th>Contribution</th>
+							<th>Rate</th>
+						</tr>
+					</thead>
+					{{
+						contributionRates := taxes.ContributionRatesByYear[y]
+						ahv := float64(contributionRates.AHV) / 100.0
+						alv := float64(contributionRates.ALV) / 100.0
+					}}
+					<tbody>
+						<tr>
+							<th>AHV</th>
+							<th>{ fmt.Sprintf("%.2f", ahv) }</th>
+						</tr>
+						<tr>
+							<th>ALV</th>
+							<th>{ fmt.Sprintf("%.2f", alv) }</th>
+						</tr>
+					</tbody>
+				</table>
+			</details>
+		}
+	</details>
 }
 
 templ ViewDeductionLimitsByYear() {
@@ -667,7 +708,7 @@ templ ViewResult(ts *TaxSimulation) {
 				totalSingle := baseFederalSingle + cantonalZurichSingle + communalZurichSingle
 				totalSinglePerc := fSingle.AdditionalPercentage + cantonalPercentageSingle + communalPercentageSingle
 				totalMS := baseFederalMS + cantonalZurichMS + communalZurichMS
-				totalMSPerc := fSingle.AdditionalPercentage + cantonalPercentageMS + communalPercentageMS
+				totalMSPerc := fMS.AdditionalPercentage + cantonalPercentageMS + communalPercentageMS
 			}}
 			<tbody>
 				<tr>

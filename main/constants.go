@@ -6,8 +6,6 @@ const (
 	onlineCountID = "online-count"
 
 	grossSalary   = "gross_salary"
-	ahvBeitrag    = "ahv_beitrag"
-	alvBeitrag    = "alv_beitrag"
 	ktgBeitrag    = "ktg_beitrag"
 	bvgBeitrag    = "bvg_beitrag"
 	taxableSalary = "taxable_salary"

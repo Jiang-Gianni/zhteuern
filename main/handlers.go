@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Jiang-Gianni/zhteuern/browser"
+	"github.com/Jiang-Gianni/zhteuern/taxes"
 	"github.com/andybalholm/brotli"
 	"github.com/skip2/go-qrcode"
 )
@@ -138,8 +139,6 @@ func (s *Server) TaxSimulationHandler() httpHandlerFunc {
 			case income:
 				err = s.writeDB.UpdateTSIncome(ctx, UpdateTSIncomeParams{
 					GrossSalary:     formInt(inputMap[grossSalary], maxSalary),
-					AhvBeitrag:      formInt(inputMap[ahvBeitrag], maxBeitrag),
-					AlvBeitrag:      formInt(inputMap[alvBeitrag], maxBeitrag),
 					KtgBeitrag:      formInt(inputMap[ktgBeitrag], maxBeitrag),
 					BvgBeitrag:      formInt(inputMap[bvgBeitrag], maxBeitrag),
 					TaxableSalary:   formInt(inputMap[taxableSalary], maxSalary),
@@ -202,6 +201,8 @@ func (s *Server) TaxSimulationHandler() httpHandlerFunc {
 				if err != nil {
 					return fmt.Errorf("get: %w", err)
 				}
+				ts.AhvBeitrag = taxes.ContributionRatesByYear[ts.Year].AHV
+				ts.AlvBeitrag = taxes.ContributionRatesByYear[ts.Year].ALV
 				if viewTs == nil || ts.Version != viewTs.Version {
 					browserUpdates = append(browserUpdates, ts.toBrowserUpdates()...)
 				}
@@ -321,8 +322,6 @@ func (ts *TaxSimulation) taxableSalaryFederal() float32 {
 func (ts *TaxSimulation) toBrowserUpdates() (out []*browser.Update) {
 	valueByID := map[string]int{
 		grossSalary:              ts.GrossSalary,
-		ahvBeitrag:               ts.AhvBeitrag,
-		alvBeitrag:               ts.AlvBeitrag,
 		ktgBeitrag:               ts.KtgBeitrag,
 		bvgBeitrag:               ts.BvgBeitrag,
 		taxableSalary:            ts.TaxableSalary,

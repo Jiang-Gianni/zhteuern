@@ -38,8 +38,6 @@ where tax_simulation_id = ?;
 update tax_simulation
 set
     gross_salary = ?,
-    ahv_beitrag = ?,
-    alv_beitrag = ?,
     ktg_beitrag = ?,
     bvg_beitrag = ?,
     taxable_salary = ?,

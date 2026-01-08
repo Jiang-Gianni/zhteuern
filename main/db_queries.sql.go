@@ -105,8 +105,6 @@ const updateTSIncome = `-- name: UpdateTSIncome :exec
 update tax_simulation
 set
     gross_salary = ?,
-    ahv_beitrag = ?,
-    alv_beitrag = ?,
     ktg_beitrag = ?,
     bvg_beitrag = ?,
     taxable_salary = ?,
@@ -118,8 +116,6 @@ where tax_simulation_id = ?
 
 type UpdateTSIncomeParams struct {
 	GrossSalary     int
-	AhvBeitrag      int
-	AlvBeitrag      int
 	KtgBeitrag      int
 	BvgBeitrag      int
 	TaxableSalary   int
@@ -131,8 +127,6 @@ type UpdateTSIncomeParams struct {
 func (q *Queries) UpdateTSIncome(ctx context.Context, arg UpdateTSIncomeParams) error {
 	_, err := q.db.ExecContext(ctx, updateTSIncome,
 		arg.GrossSalary,
-		arg.AhvBeitrag,
-		arg.AlvBeitrag,
 		arg.KtgBeitrag,
 		arg.BvgBeitrag,
 		arg.TaxableSalary,
