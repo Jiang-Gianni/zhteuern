@@ -728,27 +728,31 @@ templ ViewResult(ts *TaxSimulation) {
 			oneThirteenSalary := referenceSalary / 13
 			oneThirteenQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, oneThirteenSalary)) / 100
 			oneThirteenQs := oneThirteenSalary * oneThirteenQsPerc / 100
+			oneThirteenNS := (ts.taxableSalaryNoInvsNoDeds() / 13) - oneThirteenQs
 
 			twoThirteenSalary := oneThirteenSalary * 2
 			twoThirteenQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, twoThirteenSalary)) / 100
 			twoThirteenQs := twoThirteenSalary * twoThirteenQsPerc / 100
+			twoThirteenNS := (ts.taxableSalaryNoInvsNoDeds() * 2 / 13) - twoThirteenQs
 
 			weightQsPerc := (11*oneThirteenQsPerc + 2*twoThirteenQsPerc) / 13
 			totalQs13 := oneThirteenQs*11 + twoThirteenQs
+			totalNS13 := oneThirteenNS*11 + twoThirteenNS
 		}}
 		<h6>Reference Annual Salary (Gross Salary): { referenceSalary }</h6>
 		<h6>Considering the A0N case (single, no children, no church)</h6>
 		<table class="striped">
 			<thead>
 				<tr>
-					<th colspan="5">13 Months</th>
+					<th colspan="6">13 Months</th>
 				</tr>
 				<tr>
 					<th>Count</th>
 					<th>Fraction</th>
-					<th>Monthly Salary</th>
+					<th>Monthly Gross Salary</th>
 					<th>Qs %</th>
 					<th>Qs</th>
+					<th>Net Salary</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -758,6 +762,7 @@ templ ViewResult(ts *TaxSimulation) {
 					<th>{ fmt.Sprintf("%.2f",oneThirteenSalary) }</th>
 					<th>{ fmt.Sprintf("%.2f",oneThirteenQsPerc) }</th>
 					<th>{ fmt.Sprintf("%.2f",oneThirteenQs) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneThirteenNS) }</th>
 				</tr>
 				<tr>
 					<th>1</th>
@@ -765,25 +770,28 @@ templ ViewResult(ts *TaxSimulation) {
 					<th>{ fmt.Sprintf("%.2f",twoThirteenSalary) }</th>
 					<th>{ fmt.Sprintf("%.2f",twoThirteenQsPerc) }</th>
 					<th>{ fmt.Sprintf("%.2f",twoThirteenQs) }</th>
+					<th>{ fmt.Sprintf("%.2f",twoThirteenNS) }</th>
 				</tr>
 				<tr>
-					<th colspan="3">Weighted Qs % average and total Qs</th>
+					<th colspan="3">Weighted Qs % average, total Qs, total Net Salary</th>
 					<th>{ fmt.Sprintf("%.2f",weightQsPerc) }</th>
 					<th>{ fmt.Sprintf("%.2f",totalQs13) }</th>
+					<th>{ fmt.Sprintf("%.2f",totalNS13) }</th>
 				</tr>
 			</tbody>
 		</table>
 		<table class="striped">
 			<thead>
 				<tr>
-					<th colspan="5">12 Months</th>
+					<th colspan="6">12 Months</th>
 				</tr>
 				<tr>
 					<th>Count</th>
 					<th>Fraction</th>
-					<th>Monthly Salary</th>
+					<th>Monthly Gross Salary</th>
 					<th>Qs %</th>
 					<th>Qs</th>
+					<th>Net Salary</th>
 				</tr>
 			</thead>
 			{{
@@ -791,6 +799,8 @@ templ ViewResult(ts *TaxSimulation) {
 				oneTwelveQsPerc := float32(taxes.QuellenSteuerPercentage(ts.Year, oneTwelveSalary)) / 100
 				oneTwelveQs := oneTwelveSalary * oneTwelveQsPerc / 100
 				totalQs12 := oneTwelveQs * 12
+				oneTwelveNS := (ts.taxableSalaryNoInvsNoDeds() / 12) - oneTwelveQs
+				totalNS12 := oneTwelveNS * 12
 			}}
 			<tbody>
 				<tr>
@@ -799,11 +809,13 @@ templ ViewResult(ts *TaxSimulation) {
 					<th>{ fmt.Sprintf("%.2f",oneTwelveSalary) }</th>
 					<th>{ fmt.Sprintf("%.2f",oneTwelveQsPerc) }</th>
 					<th>{ fmt.Sprintf("%.2f",oneTwelveQs) }</th>
+					<th>{ fmt.Sprintf("%.2f",oneTwelveNS) }</th>
 				</tr>
 				<tr>
-					<th colspan="3">Weighted Qs % average and total Qs</th>
+					<th colspan="3">Weighted Qs % average, total Qs, total Net Salary</th>
 					<th>{ fmt.Sprintf("%.2f",oneTwelveQsPerc) }</th>
 					<th>{ fmt.Sprintf("%.2f",totalQs12) }</th>
+					<th>{ fmt.Sprintf("%.2f",totalNS12) }</th>
 				</tr>
 			</tbody>
 		</table>
